@@ -1,5 +1,5 @@
 ---
-- name: Install Docker on the web server
+- name: Configure the web server
   hosts: web
   become: true
 
@@ -24,3 +24,20 @@
         name: ubuntu
         groups: docker
         append: true
+
+    - name: Ensure SSH directory exists
+      ansible.builtin.file:
+        path: /home/ubuntu/.ssh
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: '0700'
+
+    - name: Authorize GitHub Actions deployment key
+      ansible.builtin.lineinfile:
+        path: /home/ubuntu/.ssh/authorized_keys
+        line: "{{ lookup('file', playbook_dir + '/github_actions_deploy.pub') | trim }}"
+        create: true
+        owner: ubuntu
+        group: ubuntu
+        mode: '0600'
